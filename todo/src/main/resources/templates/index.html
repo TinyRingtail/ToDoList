@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>Справи</title>
+
+</head>
+<body>
+<div class="container mt-5">
+    <nav class="navbar navbar-light bg-light mb-4">
+        <div class="container-fluid justify-content-end">
+            <form th:action="@{/logout}" method="post" style="margin:0;">
+                <button type="submit" class="btn btn-outline-danger">Вийти</button>
+            </form>
+        </div>
+    </nav>
+
+    <h1 class="text-center">Справи</h1>
+
+    <form th:action="@{/add}" th:object="${NewTask}" method="post" class="mb-3">
+        <div class=input-group>
+            <input type="text" class="form-control" th:field="*{title}" placeholder="Додати справу">
+            <label>
+                <select class="form-select" th:field="*{priority}">
+                    <option value="1">Низький</option>
+                    <option value="2">Середній</option>
+                    <option value="3">Високий</option>
+                </select>
+            </label>
+            <button type="submit" class="btn btn-primary">Додати</button>
+        </div>
+    </form>
+
+    <div class="mb-3 text-end">
+        <a th:href="@{/?sort=newest}" class="btn btn-outline-primary btn-sm me-2"
+           th:classappend="${sort == null or sort == 'newest'} ? ' active' : ''">
+            Новіші
+        </a>
+        <a th:href="@{/?sort=oldest}" class="btn btn-outline-primary btn-sm"
+           th:classappend="${sort == 'oldest'} ? ' active' : ''">
+            Старіші
+        </a>
+        <a th:href="@{/?sort=priority}" class="btn btn-outline-primary btn-sm me-2"
+           th:classappend="${sort == 'priority'} ? ' active' : ''">
+            За пріоритетом
+        </a>
+    </div>
+
+    <ul class="list-group">
+        <li th:each="item : ${allTasks}" class="list-group-item">
+            <div class="d-flex justify-content-between align-items-start">
+
+                <div class="d-flex">
+                    <form th:action="@{/toggle/{id}(id=${item.id})}" method="post" class="me-3">
+                        <label>
+                            <input type="checkbox" onchange="this.form.submit()" th:checked="${item.completed}">
+                        </label>
+                    </form>
+
+                    <div>
+                        <strong th:text="${item.title}"
+                                th:classappend="${item.completed} ? 'text-decoration-line-through text-muted' : ''">
+                        </strong>
+
+                        <div class="mt-2">
+                    <span th:switch="${item.priority}">
+                        <span th:case="1" class="badge bg-secondary">Низький</span>
+                        <span th:case="2" class="badge bg-warning text-dark">Середній</span>
+                        <span th:case="3" class="badge bg-danger">Високий</span>
+                    </span>
+                        </div>
+
+                        <div>
+                            <small class="text-muted"
+                                   th:text="${#temporals.format(item.createdAt, 'dd.MM.yyyy HH:mm')}"></small>
+                        </div>
+
+                        <form th:id="'edit-' + ${item.id}" th:action="@{/edit/{id}(id=${item.id})}"
+                              method="post" class="d-none mt-2 d-flex">
+                            <label>
+                                <input type="text" name="title" th:value="${item.title}"
+                                       class="form-control form-control-sm me-2" required />
+                            </label>
+                            <button type="submit" class="btn btn-success btn-sm">Зберегти</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column align-items-end">
+                    <button class="btn btn-outline-secondary btn-sm mb-2"
+                            type="button"
+                            th:onclick="'document.getElementById(\'edit-' + ${item.id} + '\').classList.toggle(\'d-none\')'">
+                        Редагувати
+                    </button>
+
+                    <form th:action="@{/delete/{id}(id=${item.id})}" method="post">
+                        <button type="submit" class="btn btn-danger btn-sm">Видалити</button>
+                    </form>
+                </div>
+            </div>
+        </li>
+
+    </ul>
+
+    <form th:action="@{/deleteAll}" method="post" class="text-center mt-5 mb-4"
+          onsubmit="return confirm('Ви справді хочете видалити усі справи?');">
+        <button type="submit" class="btn btn-danger">Видалити усі справи</button>
+    </form>
+
+</div>
+
+</body>
+
+</html>
